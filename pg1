@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DataDawn - Privacy Tracker</title>
+    <style>
+        
+        
+        :root {
+            --color-bg: #f8fafc;
+            --color-header: #C3B1E1;
+            --color-card: #B0C4DE;
+            --color-card-expired: #fde68a;
+            --color-text-dark: #334155;
+            --color-text-light: #f1f5f9;
+            --color-primary: #4f46e5;
+            --color-primary-hover: #4338ca;
+            --color-danger: #ef4444;
+            --color-danger-hover: #dc2626;
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+            --rounded-lg: 0.5rem;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--color-bg);
+            color: var(--color-text-dark);
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        header {
+            background-color: var(--color-header);
+            padding: 2rem;
+            text-align: center;
+            box-shadow: var(--shadow-md);
+            color: white;
+        }
+
+        header h1 {
+            font-family: 'Lora', serif;
+            font-size: 3rem;
+            font-weight: 700;
+            margin: 0;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+        }
+
+        header p {
+            margin-top: 0.5rem;
+            font-size: 1.125rem;
+            font-weight: 300;
+            opacity: 0.9;
+        }
+
+        main {
+            max-width: 56rem;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .controls h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: var(--rounded-lg);
+            border: 1px solid transparent;
+            font-weight: 600;
+            box-shadow: var(--shadow-md);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background-color: var(--color-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--color-primary-hover);
+        }
+        
+        #add-entry-form {
+            padding: 1.5rem;
+            background-color: white;
+            border-radius: var(--rounded-lg);
+            box-shadow: var(--shadow-lg);
+            margin-bottom: 2rem;
+            display: grid;
+            gap: 1rem;
+        }
+
+        #add-entry-form.hidden {
+            display: none;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        
+        @media (min-width: 768px) {
+            .form-group-grid {
+                grid-template-columns: 2fr 1fr;
+            }
+        }
+
+        .form-label {
+            margin-bottom: 0.25rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            box-sizing: border-box;
+        }
+
+        .form-actions {
+            text-align: right;
+        }
+        
+        .entry-card {
+            display: flex;
+            flex-direction: column;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: var(--rounded-lg);
+            box-shadow: var(--shadow-md);
+            transition: background-color 0.3s;
+            background-color: var(--color-card);
+        }
+        .entry-card.expired {
+            background-color: var(--color-card-expired);
+        }
+
+        .entry-card-main {
+            flex-grow: 1;
+            margin-bottom: 1rem;
+        }
+
+        .entry-card h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin: 0 0 0.25rem;
+        }
+        .entry-card .data-type, .entry-card .submission-date {
+            font-size: 0.875rem;
+            opacity: 0.9;
+        }
+        .entry-card .submission-date {
+            font-size: 0.75rem;
+            opacity: 0.7;
+            margin-top: 0.25rem;
+        }
+
+        .entry-card-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .countdown {
+            font-family: monospace;
+            font-size: 1rem;
+            white-space: nowrap;
+        }
+
+        .btn-action {
+            background-color: var(--color-danger);
+            color: white;
+            font-weight: 700;
+            padding: 0.5rem 1rem;
+            border-radius: var(--rounded-lg);
+        }
+        .btn-action:hover {
+            background-color: var(--color-danger-hover);
+        }
+
+        .btn-delete {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 50%;
+        }
+        .btn-delete:hover {
+            background-color: rgba(0,0,0,0.1);
+        }
+        .btn-delete svg {
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+
+        #empty-state {
+            text-align: center;
+            padding: 4rem 1.5rem;
+            background-color: white;
+            border-radius: var(--rounded-lg);
+            box-shadow: var(--shadow-md);
+        }
+        #empty-state.hidden {
+            display: none;
+        }
+        #empty-state h3 {
+            font-size: 1.25rem;
+            font-weight: 500;
+            color: #4b5563;
+        }
+        #empty-state p {
+            margin-top: 0.5rem;
+            color: #6b7280;
+        }
+
+        /* Modal Styles */
+        #email-modal {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            padding: 1rem;
+        }
+        #email-modal.hidden {
+            display: none;
+        }
+        .modal-content {
+            background-color: white;
+            border-radius: var(--rounded-lg);
+            box-shadow: var(--shadow-xl);
+            width: 100%;
+            max-width: 42rem;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .modal-header h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0;
+        }
+        .modal-header p {
+            margin: 0.25rem 0 0;
+            color: #6b7280;
+        }
+        .modal-body {
+            padding: 1.5rem;
+            overflow-y: auto;
+            display: grid;
+            gap: 1rem;
+        }
+        .modal-footer {
+            padding: 1rem 1.5rem;
+            background-color: #f9fafb;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+        .modal-footer .btn {
+             box-shadow: none;
+        }
+        .btn-secondary {
+            background-color: white;
+            color: var(--color-text-dark);
+            border-color: #d1d5db;
+        }
+        .btn-mailto {
+            text-decoration: none;
+        }
+        .btn-mailto[disabled] {
+            background-color: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        textarea.form-input {
+            height: 12rem;
+            resize: vertical;
+        }
+        
+        @media (min-width: 640px) {
+            header h1 { font-size: 3.75rem; }
+            .entry-card { flex-direction: row; align-items: center; }
+            .entry-card-main { margin-bottom: 0; }
+            .countdown { font-size: 1.125rem; }
+        }
+
+    </style>
+</head>
+<body>
+    <header>
+        <h1>DataDawn</h1>
+        <p>Your Personal Privacy Sunrise — Track, Protect, and Take Control</p>
+    </header>
+
+    <main>
+        <div class="controls">
+            <h2>Your Data Watchlist</h2>
+            <button id="toggle-form-btn" class="btn btn-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                <span>Add Entry</span>
+            </button>
+        </div>
+
+        <form id="add-entry-form" class="hidden">
+            <div class="form-group-grid">
+                <div class="form-group">
+                    <label for="appName" class="form-label">App/Website Name</label>
+                    <input type="text" id="appName" class="form-input" placeholder="e.g., Swiggy, Instagram" required>
+                </div>
+                <div class="form-group">
+                    <label for="durationDays" class="form-label">Deletion in (Days)</label>
+                    <input type="number" id="durationDays" class="form-input" min="1" value="30" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="dataType" class="form-label">Type of Data Sent</label>
+                <select id="dataType" class="form-select"></select>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Add to Watchlist</button>
+            </div>
+        </form>
+
+        <div id="entries-list"></div>
+
+        <div id="empty-state" class="hidden">
+            <h3>Your watchlist is empty.</h3>
+            <p>Click "Add Entry" to start tracking your data.</p>
+        </div>
+    </main>
+
+    <div id="email-modal" class="hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">Request Data Deletion</h2>
+                <p id="modal-subtitle">A draft email has been generated for you.</p>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="companyEmail" class="form-label">Company's Privacy Email Address</label>
+                    <input type="email" id="companyEmail" class="form-input" placeholder="e.g., privacy@company.com" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Generated Email Body</label>
+                    <textarea id="emailBody" class="form-input" readonly></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="modal-cancel-btn" class="btn btn-secondary">Cancel</button>
+                <a id="modal-send-btn" href="#" class="btn btn-primary btn-mailto" disabled>Open in Email Client & Delete</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const DATA_TYPES = {
+                PERSONAL: 'Personal Data (Name, Email, etc.)',
+                LOCATION: 'Location Data',
+                USAGE: 'Usage & Activity Data',
+                FINANCIAL: 'Financial Information',
+                CONTACTS: 'Contacts & Social Graph',
+                HEALTH: 'Health Information',
+                OTHER: 'Other/Unspecified',
+            };
+
+            // DOM Elements
+            const toggleFormBtn = document.getElementById('toggle-form-btn');
+            const addEntryForm = document.getElementById('add-entry-form');
+            const entriesList = document.getElementById('entries-list');
+            const emptyState = document.getElementById('empty-state');
+            const dataTypeSelect = document.getElementById('dataType');
+            
+            // Modal DOM Elements
+            const emailModal = document.getElementById('email-modal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalSubtitle = document.getElementById('modal-subtitle');
+            const companyEmailInput = document.getElementById('companyEmail');
+            const emailBodyTextarea = document.getElementById('emailBody');
+            const modalCancelBtn = document.getElementById('modal-cancel-btn');
+            const modalSendBtn = document.getElementById('modal-send-btn');
+
+            let entries = [];
+            let currentEntryToDelete = null;
+
+            // --- DATA FUNCTIONS ---
+            function loadEntries() {
+                const savedEntries = localStorage.getItem('dataDawnEntries');
+                entries = savedEntries ? JSON.parse(savedEntries) : [];
+            }
+
+            function saveEntries() {
+                localStorage.setItem('dataDawnEntries', JSON.stringify(entries));
+            }
+
+            function addEntry(entryData) {
+                const submissionTimestamp = Date.now();
+                const expirationTimestamp = submissionTimestamp + entryData.durationDays * 24 * 60 * 60 * 1000;
+
+                const newEntry = {
+                    id: `entry-${Date.now()}`,
+                    appName: entryData.appName,
+                    dataType: entryData.dataType,
+                    submissionTimestamp,
+                    expirationTimestamp,
+                };
+                entries.push(newEntry);
+                saveEntries();
+                render();
+            }
+
+            function deleteEntry(id) {
+                entries = entries.filter(entry => entry.id !== id);
+                saveEntries();
+                render();
+            }
+            
+            // --- RENDER FUNCTIONS ---
+            function formatCountdown(ms) {
+                if (ms <= 0) return { expired: true };
+                const days = Math.floor(ms / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((ms % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((ms % (1000 * 60)) / 1000);
+                return {
+                    days: String(days).padStart(2, '0'),
+                    hours: String(hours).padStart(2, '0'),
+                    minutes: String(minutes).padStart(2, '0'),
+                    seconds: String(seconds).padStart(2, '0'),
+                    expired: false
+                };
+            }
+            
+            function createEntryCard(entry) {
+                const card = document.createElement('div');
+                const timeLeft = entry.expirationTimestamp - Date.now();
+                const countdown = formatCountdown(timeLeft);
+
+                const submissionDate = new Date(entry.submissionTimestamp).toLocaleDateString('en-US', {
+                    year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                });
+
+                card.className = `entry-card ${countdown.expired ? 'expired' : ''}`;
+                card.innerHTML = `
+                    <div class="entry-card-main">
+                        <h3>${entry.appName}</h3>
+                        <p class="data-type">${entry.dataType}</p>
+                        <p class="submission-date">Data sent: ${submissionDate}</p>
+                    </div>
+                    <div class="entry-card-actions">
+                        <div class="countdown-container"></div>
+                        <button class="btn-delete" title="Delete entry for ${entry.appName}">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.134-2.033-2.134H8.033C6.91 2.75 6 3.664 6 4.844v.916m7.5 0" /></svg>
+                        </button>
+                    </div>
+                `;
+
+                const countdownContainer = card.querySelector('.countdown-container');
+                if (countdown.expired) {
+                    const actionBtn = document.createElement('button');
+                    actionBtn.className = 'btn btn-action';
+                    actionBtn.textContent = 'Take Action';
+                    actionBtn.onclick = () => openModal(entry);
+                    countdownContainer.appendChild(actionBtn);
+                } else {
+                    countdownContainer.innerHTML = `<div class="countdown">${countdown.days}d ${countdown.hours}h ${countdown.minutes}m ${countdown.seconds}s</div>`;
+                }
+
+                card.querySelector('.btn-delete').onclick = () => deleteEntry(entry.id);
+                return card;
+            }
+
+            function render() {
+                entriesList.innerHTML = '';
+                if (entries.length === 0) {
+                    emptyState.classList.remove('hidden');
+                    return;
+                }
+                
+                emptyState.classList.add('hidden');
+                
+                const sortedEntries = [...entries].sort((a, b) => a.expirationTimestamp - b.expirationTimestamp);
+                
+                sortedEntries.forEach(entry => {
+                    const card = createEntryCard(entry);
+                    entriesList.appendChild(card);
+                });
+            }
+            
+            // --- MODAL FUNCTIONS ---
+            function openModal(entry) {
+                currentEntryToDelete = entry.id;
+                modalTitle.textContent = `Request Data Deletion for ${entry.appName}`;
+                emailBodyTextarea.value = generateEmailBody(entry.appName, entry.dataType);
+                companyEmailInput.value = '';
+                updateMailtoLink();
+                emailModal.classList.remove('hidden');
+                companyEmailInput.focus();
+            }
+
+            function closeModal() {
+                emailModal.classList.add('hidden');
+                currentEntryToDelete = null;
+            }
+            
+            function generateEmailBody(appName, dataType) {
+                return `Dear ${appName} Privacy Team,
+
+I am writing to formally request the complete and permanent deletion of my personal data from your systems and services. This request is made in accordance with my rights under applicable data protection regulations.
+
+The data I am requesting to be deleted includes information you have collected regarding:
+- ${dataType}
+
+Please ensure that all of my personal information is erased from your main systems, backup archives, and any third-party processors you may have shared it with.
+
+I would appreciate a confirmation email from you once the deletion process has been completed.
+
+Thank you for your cooperation.
+
+Sincerely,
+A Concerned User`;
+            }
+
+            function updateMailtoLink() {
+                const email = companyEmailInput.value.trim();
+                if (email) {
+                    const subject = `Data Deletion Request for ${modalTitle.textContent.split('for ')[1]}`;
+                    const body = emailBodyTextarea.value;
+                    modalSendBtn.href = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+                    modalSendBtn.removeAttribute('disabled');
+                    modalSendBtn.classList.remove('btn-mailto[disabled]');
+                } else {
+                    modalSendBtn.href = '#';
+                    modalSendBtn.setAttribute('disabled', 'true');
+                     modalSendBtn.classList.add('btn-mailto[disabled]');
+                }
+            }
+
+
+            // --- EVENT LISTENERS ---
+            toggleFormBtn.addEventListener('click', () => {
+                const isHidden = addEntryForm.classList.toggle('hidden');
+                toggleFormBtn.querySelector('span').textContent = isHidden ? 'Add Entry' : 'Cancel';
+            });
+
+            addEntryForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const appName = document.getElementById('appName').value.trim();
+                const durationDays = parseInt(document.getElementById('durationDays').value, 10);
+                const dataType = document.getElementById('dataType').value;
+
+                if (appName && durationDays > 0) {
+                    addEntry({ appName, durationDays, dataType });
+                    addEntryForm.reset();
+                    document.getElementById('durationDays').value = 30; // Reset to default
+                    addEntryForm.classList.add('hidden');
+                    toggleFormBtn.querySelector('span').textContent = 'Add Entry';
+                } else {
+                    alert('Please fill in all fields correctly.');
+                }
+            });
+
+            // Modal events
+            modalCancelBtn.addEventListener('click', closeModal);
+            companyEmailInput.addEventListener('input', updateMailtoLink);
+            modalSendBtn.addEventListener('click', (e) => {
+                if(modalSendBtn.hasAttribute('disabled')) {
+                    e.preventDefault();
+                    return;
+                }
+                if (currentEntryToDelete) {
+                    deleteEntry(currentEntryToDelete);
+                }
+                closeModal();
+            });
+
+            // --- INITIALIZATION ---
+            function init() {
+                // Populate data type dropdown
+                Object.values(DATA_TYPES).forEach(type => {
+                    const option = document.createElement('option');
+                    option.value = type;
+                    option.textContent = type;
+                    dataTypeSelect.appendChild(option);
+                });
+
+                loadEntries();
+                render();
+                setInterval(render, 1000); // Re-render every second to update countdowns
+            }
+
+            init();
+        });
+    </script>
+</body>
+</html>
